@@ -1,0 +1,319 @@
+{  
+   "positions":[  
+      {  
+         "id":2033040001,
+         "placa":"XXX0001",
+         "serialNumber":1254987,
+         "coord":[  
+            -20.5190,
+            -50.6472
+         ],
+         "end":"R. Rio de Janeiro, 1001, Londrina, PR",
+         "dInc":"2014-05-23T14:45:59.603Z",
+         "dPos":"2014-05-23T14:18:02.000Z",
+         "motorista":"12345678914",
+         "info":{  
+            "odo":789.15,
+            "odoTotal":809.15,
+            "rpm":900,
+            "vel":0,
+            "ign":true,
+            "log":true,
+            "gps":true
+         },
+         "eventos":[  
+            {  
+               "desc":"Ignição Ligada",
+               "src":true
+            },
+            {  
+               "desc":"Ignição Ligada",
+               "src":false
+            },
+            {  
+               "desc":"Ignição Ligada",
+               "src":true
+            }
+         ],
+         "macros":[  
+            {  
+               "desc":" 111|SAIDA PDV|000000001||",
+               "aprProc":" PDV:000000001"
+            },
+            {  
+               "desc":" 222|SAIDA PDV|0000002||",
+               "aprProc":" PDV:0000002"
+            },
+            {  
+               "desc":" 333|SAIDA PDV|000003||",
+               "aprProc":" PDV:000003"
+            }, 
+            {  
+               "desc":" 444|SAIDA PDV|0000004||",
+               "aprProc":" PDV:0000004"
+            }
+         ],
+         "can":{  
+            "comb":47.0,
+            "cinto":true,
+            "freio":true,
+            "limp":false
+         }
+      },
+      {  
+         "id":2033040002,
+         "placa":"XXX00002",
+         "serialNumber":1254987,
+         "coord":[  
+            "-20.5190",
+            "-50.6472"
+         ],
+         "end":"R. Recife, 1002, Londrina, PR",
+         "dInc":"2014-05-23T14:45:59.603Z",
+         "dPos":"2014-05-23T14:18:02.000Z",
+         "motorista":"12345678914",
+         "info":{  
+            "odo":789.15,
+            "odoTotal":809.15,
+            "rpm":900,
+            "vel":0,
+            "ign":true,
+            "log":true,
+            "gps":true
+         },
+         "eventos":[  
+            {  
+               "desc":"Ignição Ligada",
+               "src":true
+            },
+             {  
+               "desc":"Ignição Ligada",
+               "src":false
+            },
+             {  
+               "desc":"Ignição Ligada",
+               "src":true
+            },
+             {  
+               "desc":"Ignição Ligada",
+               "src":false
+            }
+
+         ],
+         "macros":[  
+            {  
+               "desc":" 555|SAIDA PDV|0000005||",
+               "aprProc":" PDV:0000005"
+            },
+            {  
+               "desc":" 555|SAIDA PDV|0000006||",
+               "aprProc":" PDV:0000006"
+            }
+         ],
+         "can":{  
+            "comb":47.0,
+            "cinto":true,
+            "freio":false,
+            "limp":true
+         }
+      },
+      {  
+         "id":2033040003,
+         "placa":"XXX0003",
+         "serialNumber":1254987,
+         "coord":[  
+            "-20.5190",
+            "-50.6472"
+         ],
+         "end":"R. Bahia, 1004, Londrina, PR",
+         "dInc":"2014-05-23T14:45:59.603Z",
+         "dPos":"2014-05-23T14:18:02.000Z",
+         "motorista":"12345678914",
+         "info":{  
+            "odo":789.15,
+            "odoTotal":809.15,
+            "rpm":900,
+            "vel":0,
+            "ign":true,
+            "log":true,
+            "gps":true
+         },
+         "eventos":[  
+            {  
+               "desc":"Ignição Ligada",
+               "src":true
+            }
+         ],
+         "macros":[  
+            {  
+               "desc":" 666|SAIDA PDV|000006||",
+               "aprProc":" PDV:000006"
+            }
+         ],
+         "can":{  
+            "comb":47.0,
+            "cinto":true,
+            "freio":true,
+            "limp":false
+         }
+      },
+      {  
+         "id":2033040005,
+         "placa":"XXX0005",
+         "serialNumber":1254987,
+         "coord":[  
+            "-20.5190",
+            "-50.6472"
+         ],
+         "end":"R. Parana, 1005, Londrina, PR",
+         "dInc":"2014-05-23T14:45:59.603Z",
+         "dPos":"2014-05-23T14:18:02.000Z",
+         "motorista":"12345678914",
+         "info":{  
+            "odo":789.15,
+            "odoTotal":809.15,
+            "rpm":900,
+            "vel":0,
+            "ign":true,
+            "log":true,
+            "gps":true
+         },
+         "eventos":[  
+            {  
+               "desc":"Ignição Ligada",
+               "src":true
+            }
+         ],
+         "macros":[  
+            {  
+               "desc":" 102|SAIDA PDV|0000102||",
+               "aprProc":" PDV:0000102"
+            },
+            {  
+               "desc":" 101|SAIDA PDV|0000101||",
+               "aprProc":" PDV:0000101"
+            },
+            {  
+               "desc":" 103|SAIDA PDV|0000103||",
+               "aprProc":" PDV:0000103"
+            },
+            {  
+               "desc":" 104|SAIDA PDV|0000104||",
+               "aprProc":" PDV:0000104"
+            },
+            {  
+               "desc":" 105|SAIDA PDV|0000105||",
+               "aprProc":" PDV:0000105"
+            }
+
+         ],
+         "can":{  
+            "comb":47.0,
+            "cinto":true,
+            "freio":true,
+            "limp":false
+         }
+      },
+      {  
+         "id":2033040006,
+         "placa":"XXX0006",
+         "serialNumber":1254987,
+         "coord":[  
+            "-20.5190",
+            "-50.6472"
+         ],
+         "end":"R. Manaus, 1006, Londrina, PR",
+         "dInc":"2014-05-23T14:45:59.603Z",
+         "dPos":"2014-05-23T14:18:02.000Z",
+         "motorista":"12345678914",
+         "info":{  
+            "odo":789.15,
+            "odoTotal":809.15,
+            "rpm":900,
+            "vel":0,
+            "ign":true,
+            "log":true,
+            "gps":true
+         },
+         "eventos":[  
+            {  
+               "desc":"Ignição Ligada",
+               "src":true
+            },
+             {  
+               "desc":"Teste",
+               "src":true
+            },
+             {  
+               "desc":"Ignição Ligada",
+               "src":false
+            },
+             {  
+               "desc":"Teste",
+               "src":false
+            }
+         ],
+         "macros":[  
+            {  
+               "desc":" 201|SAIDA PDV|00000201||",
+               "aprProc":" PDV:00000201"
+            },
+            {  
+               "desc":" 201|SAIDA PDV|00000202||",
+               "aprProc":" PDV:00000202"
+            }
+         ],
+         "can":{  
+            "comb":47.0,
+            "cinto":true,
+            "freio":true,
+            "limp":false
+         }
+      },
+      {  
+         "id":2033040004,
+         "placa":"XXX0004",
+         "serialNumber":1254987,
+         "coord":[  
+            "-20.5190",
+            "-50.6472"
+         ],
+         "end":"R. Rio Grande, 1004, Londrina, PR",
+         "dInc":"2014-05-23T14:45:59.603Z",
+         "dPos":"2014-05-23T14:18:02.000Z",
+         "motorista":"12345678914",
+         "info":{  
+            "odo":789.15,
+            "odoTotal":809.15,
+            "rpm":900,
+            "vel":0,
+            "ign":true,
+            "log":true,
+            "gps":true
+         },
+         "eventos":[  
+            {  
+               "desc":"Ignição Ligada",
+               "src":true
+            }
+         ],
+         "macros":[  
+            {  
+               "desc":" 401|SAIDA PDV|00000401||",
+               "aprProc":" PDV:00000401"
+            },
+            {  
+               "desc":" 402|SAIDA PDV|00000402||",
+               "aprProc":" PDV:00000402"
+            }
+         ],
+         "can":{  
+            "comb":47.0,
+            "cinto":true,
+            "freio":true,
+            "limp":false
+         }
+      }
+
+   ]
+}

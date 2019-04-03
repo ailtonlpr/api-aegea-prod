@@ -2,15 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Carro;
 use App\Evento;
 use App\Infocan;
 use App\Informacao;
 use App\Macro;
 use App\Registro;
 use Illuminate\Http\Request;
-use App\Carro;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
 use DB;
 
 class DataProcessController extends Controller
@@ -18,11 +18,12 @@ class DataProcessController extends Controller
     //
     public function process(Request $request)
     {
+
         
-        $carros = DB::select('select * from S_CARROS');
-        echo '<pre>';
-        print_r($carros);
-        die('humm');
+        // $carros = DB::select('select * from s_carros');
+        // echo '<pre>';
+        // print_r($carros);
+        // die('humm');
 
         // echo '<pre>';
         // print_r($request);
@@ -31,28 +32,50 @@ class DataProcessController extends Controller
 
         foreach ($request->positions as $data){
 
-            $carro = Carro::where('S_CARRO_S_PLACA', $data['placa'])->first();
+            // DB::setDateFormat('MM/DD/YYYY');
+            $carro = DB::connection('oracle')
+                ->table('s_carros')
+                ->select('s_carro_i_id','s_carro_s_placa','s_carro_i_numero_serial','s_carro_i_id_interno','s_carro_d_created_at','s_carro_d_updated_at','s_carro_d_deleted_at')
+                ->where('s_carro_s_placa', $data['placa'])
+                ->first();
+
             try{
                 \DB::beginTransaction();
                 if(!$carro) {
+                    
+                    $agora = date('d-M-y');
+                    $prox_id = DB::connection('oracle')->table('s_carros')->select('s_carro_i_id')->max('s_carro_i_id');
+                    $prox_id = $prox_id + 1;
 
                     $carro = new Carro();
-                    $carro->S_CARRO_S_PLACA = $data['placa'];
-                    $carro->S_CARRO_I_NUMERO_SERIAL = $data['serialNumber'];
-                    $carro->S_CARRO_I_ID_INTERNO = $data['id'];
-                    $carro->S_CARRO_D_CREATED_AT = date('Y-m-d H:i:s');
-                    $carro->S_CARRO_D_UPDATED_AT = null;
-                    $carro->S_CARRO_D_DELETED_AT = null;
+                    $carro->s_carro_i_id = $prox_id;
+                    $carro->s_carro_s_placa = $data['placa'];
+                    $carro->s_carro_i_numero_serial = $data['serialNumber'];
+                    $carro->s_carro_i_id_interno = $data['id'];
+                    $carro->s_carro_d_created_at = "$agora";
+                    // $carro->s_carro_d_created_at = "TO_DATE('$agora', 'yyyy/mm/dd hh24:mi:ss')";
+                    // $carro->s_carro_d_updated_at = "TO_DATE('$agora', 'yyyy/mm/dd hh24:mi:ss')";
+                    // $carro->s_carro_d_deleted_at = "TO_DATE('$agora', 'yyyy/mm/dd hh24:mi:ss')";
+
+                    // echo '<pre>';
+                    // print_r($carro->s_carro_i_id);
+                    // die('humm1');
+
                     if(!$carro->save()){
                         throw new \Exception('Erro ao gravar os dados na tabela Carros.');
                     }
+                    
                 }
 
-                $this->gravarEvento($carro->S_CARRO_I_ID, $data);
-                $this->gravarInfocan($carro->S_CARRO_I_ID, $data['can']);
-                $this->gravarInformacao($carro->S_CARRO_I_ID, $data['info']);
-                $this->gravarMacro($carro->S_CARRO_I_ID, $data);
-                $this->gravarRegistro($carro->S_CARRO_I_ID, $data);
+                // echo '<pre>';
+                // print_r($carro->s_carro_i_id);
+                // die('humm2');
+
+                $this->gravarEvento($carro->s_carro_i_id, $data);
+                $this->gravarInfocan($carro->s_carro_i_id, $data['can']);
+                $this->gravarInformacao($carro->s_carro_i_id, $data['info']);
+                $this->gravarMacro($carro->s_carro_i_id, $data);
+                $this->gravarRegistro($carro->s_carro_i_id, $data);
                 $this->gerarArquivo($data);
 
             }catch (\Exception $e){
@@ -95,14 +118,18 @@ class DataProcessController extends Controller
     private function gravarEvento($carro_id, $data)
     {
         foreach ($data['eventos'] as $d){
+            $agora = date('d-M-y');
+            $prox_id = DB::connection('oracle')->table('s_eventos')->select('s_evento_i_id')->max('s_evento_i_id');
+            $prox_id = $prox_id + 1;
 
             $evento = new Evento();
-            $evento->S_CARROS_S_CARRO_I_ID = $carro_id;
-            $evento->S_EVENTO_S_DESCRICAO = $d['desc'];
-            $evento->S_EVENTO_B_SRC = $d['src'];
-            $evento->S_EVENTO_D_CREATED_AT = date('Y-m-d H:i:s');
-            $evento->S_EVENTO_D_UPDATED_AT = null;
-            $evento->S_EVENTO_D_DELETED_AT = null;
+            $evento->s_evento_i_id = $prox_id;
+            $evento->s_carros_s_carro_i_id = $carro_id;
+            $evento->s_evento_s_descricao = $d['desc'];
+            $evento->s_evento_b_src = $d['src'];
+            $evento->s_evento_d_created_at = "$agora";
+            // $evento->s_evento_d_updated_at = null;
+            // $evento->s_evento_d_deleted_at = null;
 
             if(!$evento->save()){
                 throw new \Exception('Erro ao gravar os dados na tabela Eventos. ID carro -> {$carro_id}');
@@ -112,15 +139,20 @@ class DataProcessController extends Controller
 
     private function gravarInfocan($carro_id, $data)
     {
+        $agora = date('d-M-y');
+        $prox_id = DB::connection('oracle')->table('s_inforcans')->select('s_inforcan_i_id')->max('s_inforcan_i_id');
+        $prox_id = $prox_id + 1;
+
         $infocan = new Infocan();
-        $infocan->S_CARROS_S_CARRO_I_ID = $carro_id;
-        $infocan->S_INFORCAN_F_COMBUSTIVEL = $data['comb'];
-        $infocan->S_INFORCAN_B_CINTO = $data['cinto'];
-        $infocan->S_INFORCAN_B_FREIO = $data['freio'];
-        $infocan->S_INFORCAN_B_LIMP = $data['limp'];
-        $infocan->S_INFORCAN_D_CREATED_AT = date('Y-m-d H:i:s');
-        $infocan->S_INFORCAN_D_UPDATED_AT = null;
-        $infocan->S_INFORCAN_D_DELETED_AT = null;
+        $infocan->s_inforcan_i_id = $prox_id;
+        $infocan->s_carros_s_carro_i_id = $carro_id;
+        $infocan->s_inforcan_f_combustivel = $data['comb'];
+        $infocan->s_inforcan_b_cinto = $data['cinto'];
+        $infocan->s_inforcan_b_freio = $data['freio'];
+        $infocan->s_inforcan_b_limp = $data['limp'];
+        $infocan->s_inforcan_d_created_at = "$agora";
+        // $infocan->s_inforcan_d_updated_at = null;
+        // $infocan->s_inforcan_d_deleted_at = null;
 
         if(!$infocan->save()){
             throw new \Exception('Erro ao gravar os dados na tabela Infocan. ID carro -> {$carro_id}');
@@ -130,18 +162,23 @@ class DataProcessController extends Controller
 
     private function gravarInformacao($carro_id, $data)
     {
+        $agora = date('d-M-y');
+        $prox_id = DB::connection('oracle')->table('s_informacoes')->select('s_informacoe_i_id')->max('s_informacoe_i_id');
+        $prox_id = $prox_id + 1;
+
         $informacao = new Informacao();
-        $informacao->S_CARROS_S_CARRO_I_ID = $carro_id;
-        $informacao->S_INFORMACOE_F_ODO = $data['odo'];
-        $informacao->S_INFORMACOE_F_ODO_TOTAL = $data['odoTotal'];
-        $informacao->S_INFORMACOE_I_RPM = $data['rpm'];
-        $informacao->S_INFORMACOE_I_VELOCIDADE = $data['vel'];
-        $informacao->S_INFORMACOE_B_LOG = $data['log'];
-        $informacao->S_INFORMACOE_B_IGN = $data['ign'];
-        $informacao->S_INFORMACOE_B_GPS = $data['gps'];
-        $informacao->S_INFORMACOE_D_CREATED_AT = date('Y-m-d H:i:s');
-        $informacao->S_INFORMACOE_D_UPDATED_AT = null;
-        $informacao->S_INFORMACOE_D_DELETED_AT = null;
+        $informacao->s_informacoe_i_id = $prox_id;
+        $informacao->s_carros_s_carro_i_id = $carro_id;
+        $informacao->s_informacoe_f_odo = $data['odo'];
+        $informacao->s_informacoe_f_odo_total = $data['odoTotal'];
+        $informacao->s_informacoe_i_rpm = $data['rpm'];
+        $informacao->s_informacoe_i_velocidade = $data['vel'];
+        $informacao->s_informacoe_b_log = $data['log'];
+        $informacao->s_informacoe_b_ign = $data['ign'];
+        $informacao->s_informacoe_b_gps = $data['gps'];
+        $informacao->s_informacoe_d_created_at = "$agora";
+        // $informacao->s_informacoe_d_updated_at = null;
+        // $informacao->s_informacoe_d_deleted_at = null;
 
         if(!$informacao->save()){
             throw new \Exception('Erro ao gravar os dados na tabela Informacoes. ID carro -> {$carro_id}');
@@ -152,13 +189,18 @@ class DataProcessController extends Controller
     {
         foreach ($data['macros'] as $d){
 
+            $agora = date('d-M-y');
+            $prox_id = DB::connection('oracle')->table('s_macros')->select('s_macro_i_id')->max('s_macro_i_id');
+            $prox_id = $prox_id + 1;
+
             $macro = new Macro();
-            $macro->S_CARROS_S_CARRO_I_ID = $carro_id;
-            $macro->S_MACRO_S_DESCRICAO = $d['desc'];
-            $macro->S_MACRO_T_APR_PROC = $d['aprProc'];
-            $macro->S_MACRO_D_CREATED_AT = date('Y-m-d H:i:s');
-            $macro->S_MACRO_D_UPDATED_AT = null;
-            $macro->S_MACRO_D_DELETED_AT = null;
+            $macro->s_macro_i_id = $prox_id;
+            $macro->s_carros_s_carro_i_id = $carro_id;
+            $macro->s_macro_s_descricao = $d['desc'];
+            $macro->s_macro_t_apr_proc = $d['aprProc'];
+            $macro->s_macro_d_created_at = "$agora";
+            // $macro->s_macro_d_updated_at = null;
+            // $macro->s_macro_d_deleted_at = null;
 
             if(!$macro->save()){
                 throw new \Exception('Erro ao gravar os dados na tabela Macros. ID carro -> {$carro_id}');
@@ -168,21 +210,27 @@ class DataProcessController extends Controller
 
     private function gravarRegistro($carro_id, $data)
     {
+        $agora = date('d-M-y');
+        $prox_id = DB::connection('oracle')->table('s_registros')->select('s_registro_i_id')->max('s_registro_i_id');
+        $prox_id = $prox_id + 1;
+
         $registro = new Registro();
-        $registro->S_CARROS_S_CARRO_I_ID = $carro_id;
-        $registro->S_REGISTRO_S_MOTORISTA = $data['motorista'];
-        $registro->S_REGISTRO_S_ENDERECO = $data['end'];
-        $registro->S_REGISTRO_D_DATA_INC = Carbon::parse($data['dInc'])->format('Y-m-d H:m:s');
-        $registro->S_REGISTRO_D_DATA_POS = Carbon::parse($data['dPos'])->format('Y-m-d H:m:s');
-        $registro->S_REGISTRO_S_LATITUDE = $data['coord'][0];
-        $registro->S_REGISTRO_S_LONGITUDE = $data['coord'][1];
-        $registro->S_REGISTRO_D_CREATED_AT = date('Y-m-d H:i:s');
-        $registro->S_REGISTRO_D_UPDATED_AT = null;
-        $registro->S_REGISTRO_D_DELETED_AT = null;
+        $registro->s_registro_i_id = $prox_id;
+        $registro->s_carros_s_carro_i_id = $carro_id;
+        $registro->s_registro_s_motorista = '"'.$data['motorista'].'"';
+        $registro->s_registro_s_endereco = '"'.$data['end'].'"';
+        // $registro->s_registro_d_data_inc = Carbon::parse($data['dInc'])->format('Y-m-d H:m:s');
+        $registro->s_registro_d_data_inc = '"'.Carbon::parse($data['dInc'])->format('d-M-y').'"';
+        // $registro->s_registro_d_data_pos = Carbon::parse($data['dPos'])->format('Y-m-d H:m:s');
+        $registro->s_registro_d_data_pos = '"'.Carbon::parse($data['dPos'])->format('d-M-y').'"';
+        $registro->s_registro_s_latitude = '"'.$data['coord'][0].'"';
+        $registro->s_registro_s_longitude = '"'.$data['coord'][1].'"';
+        $registro->s_registro_d_created_at = '"'.$agora.'"';
+        // $registro->s_registro_d_updated_at = null;
+        // $registro->s_registro_d_deleted_at = null;
 
         if(!$registro->save()){
             throw new \Exception('Erro ao gravar os dados na tabela Registros. ID carro -> {$carro_id}');
         }
     }//gravarRegistro
 }
-
