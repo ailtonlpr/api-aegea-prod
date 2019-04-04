@@ -2,9 +2,6 @@
 
 namespace App;
 
-// use Illuminate\Database\Eloquent\Model;
-// use Illuminate\Database\Eloquent\SoftDeletes;
-
 use Yajra\Oci8\Eloquent\OracleEloquent as Model;
 
 class Registro extends Model
@@ -20,10 +17,4 @@ class Registro extends Model
 
     // Definindo a chave primaria da tabela
     protected $primaryKey = 'S_REGISTRO_I_ID';
-
-    // public $dates = [
-    //     'S_REGISTRO_D_CREATED_AT',
-    //     'S_REGISTRO_D_UPDATED_AT',
-    //     'S_REGISTRO_D_DELETED_AT'
-    // ];
 }

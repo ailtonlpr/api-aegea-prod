@@ -18,27 +18,14 @@ class DataProcessController extends Controller
     //
     public function process(Request $request)
     {
-
-        
-        // $carros = DB::select('select * from s_carros');
-        // echo '<pre>';
-        // print_r($carros);
-        // die('humm');
-
-        // echo '<pre>';
-        // print_r($request);
-        // print_r($request->positions);
-        // die;
-
         foreach ($request->positions as $data){
 
-            // DB::setDateFormat('MM/DD/YYYY');
             $carro = DB::connection('oracle')
                 ->table('s_carros')
                 ->select('s_carro_i_id','s_carro_s_placa','s_carro_i_numero_serial','s_carro_i_id_interno','s_carro_d_created_at','s_carro_d_updated_at','s_carro_d_deleted_at')
                 ->where('s_carro_s_placa', $data['placa'])
                 ->first();
-
+            
             try{
                 \DB::beginTransaction();
                 if(!$carro) {
@@ -52,24 +39,16 @@ class DataProcessController extends Controller
                     $carro->s_carro_s_placa = $data['placa'];
                     $carro->s_carro_i_numero_serial = $data['serialNumber'];
                     $carro->s_carro_i_id_interno = $data['id'];
-                    $carro->s_carro_d_created_at = "$agora";
+                    $carro->s_carro_d_created_at = $agora;
                     // $carro->s_carro_d_created_at = "TO_DATE('$agora', 'yyyy/mm/dd hh24:mi:ss')";
                     // $carro->s_carro_d_updated_at = "TO_DATE('$agora', 'yyyy/mm/dd hh24:mi:ss')";
                     // $carro->s_carro_d_deleted_at = "TO_DATE('$agora', 'yyyy/mm/dd hh24:mi:ss')";
-
-                    // echo '<pre>';
-                    // print_r($carro->s_carro_i_id);
-                    // die('humm1');
 
                     if(!$carro->save()){
                         throw new \Exception('Erro ao gravar os dados na tabela Carros.');
                     }
                     
                 }
-
-                // echo '<pre>';
-                // print_r($carro->s_carro_i_id);
-                // die('humm2');
 
                 $this->gravarEvento($carro->s_carro_i_id, $data);
                 $this->gravarInfocan($carro->s_carro_i_id, $data['can']);
@@ -91,6 +70,7 @@ class DataProcessController extends Controller
             }finally{
                 \DB::commit();
             }
+            
         }//foreach
 
         return response()->json(
@@ -107,7 +87,7 @@ class DataProcessController extends Controller
         {
             $nome_file = $data['placa'].'-'.$data['id'].'-'.date('Y_m_d_H_i_s').'.json';
             Storage::disk('api_public')->append($nome_file, json_encode($data));
-            Storage::disk('api_public')->move($nome_file, '/api_storage/teste/'.$nome_file."");
+            Storage::disk('api_public')->move($nome_file, '/api_storage/log/'.$nome_file."");
         }
         catch (\Exception $e)
         {
@@ -127,7 +107,7 @@ class DataProcessController extends Controller
             $evento->s_carros_s_carro_i_id = $carro_id;
             $evento->s_evento_s_descricao = $d['desc'];
             $evento->s_evento_b_src = $d['src'];
-            $evento->s_evento_d_created_at = "$agora";
+            $evento->s_evento_d_created_at = $agora;
             // $evento->s_evento_d_updated_at = null;
             // $evento->s_evento_d_deleted_at = null;
 
@@ -150,7 +130,7 @@ class DataProcessController extends Controller
         $infocan->s_inforcan_b_cinto = $data['cinto'];
         $infocan->s_inforcan_b_freio = $data['freio'];
         $infocan->s_inforcan_b_limp = $data['limp'];
-        $infocan->s_inforcan_d_created_at = "$agora";
+        $infocan->s_inforcan_d_created_at = $agora;
         // $infocan->s_inforcan_d_updated_at = null;
         // $infocan->s_inforcan_d_deleted_at = null;
 
@@ -176,7 +156,7 @@ class DataProcessController extends Controller
         $informacao->s_informacoe_b_log = $data['log'];
         $informacao->s_informacoe_b_ign = $data['ign'];
         $informacao->s_informacoe_b_gps = $data['gps'];
-        $informacao->s_informacoe_d_created_at = "$agora";
+        $informacao->s_informacoe_d_created_at = $agora;
         // $informacao->s_informacoe_d_updated_at = null;
         // $informacao->s_informacoe_d_deleted_at = null;
 
@@ -198,7 +178,7 @@ class DataProcessController extends Controller
             $macro->s_carros_s_carro_i_id = $carro_id;
             $macro->s_macro_s_descricao = $d['desc'];
             $macro->s_macro_t_apr_proc = $d['aprProc'];
-            $macro->s_macro_d_created_at = "$agora";
+            $macro->s_macro_d_created_at = $agora;
             // $macro->s_macro_d_updated_at = null;
             // $macro->s_macro_d_deleted_at = null;
 
@@ -217,15 +197,15 @@ class DataProcessController extends Controller
         $registro = new Registro();
         $registro->s_registro_i_id = $prox_id;
         $registro->s_carros_s_carro_i_id = $carro_id;
-        $registro->s_registro_s_motorista = '"'.$data['motorista'].'"';
+        $registro->s_registro_i_cpf_motorista = $data['motorista'];
         $registro->s_registro_s_endereco = '"'.$data['end'].'"';
         // $registro->s_registro_d_data_inc = Carbon::parse($data['dInc'])->format('Y-m-d H:m:s');
-        $registro->s_registro_d_data_inc = '"'.Carbon::parse($data['dInc'])->format('d-M-y').'"';
+        $registro->s_registro_d_data_inc = Carbon::parse($data['dInc'])->format('d-M-y');
         // $registro->s_registro_d_data_pos = Carbon::parse($data['dPos'])->format('Y-m-d H:m:s');
-        $registro->s_registro_d_data_pos = '"'.Carbon::parse($data['dPos'])->format('d-M-y').'"';
-        $registro->s_registro_s_latitude = '"'.$data['coord'][0].'"';
-        $registro->s_registro_s_longitude = '"'.$data['coord'][1].'"';
-        $registro->s_registro_d_created_at = '"'.$agora.'"';
+        $registro->s_registro_d_data_pos = Carbon::parse($data['dPos'])->format('d-M-y');
+        $registro->s_registro_s_latitude = $data['coord'][0];
+        $registro->s_registro_s_longitude = $data['coord'][1];
+        $registro->s_registro_d_created_at = $agora;
         // $registro->s_registro_d_updated_at = null;
         // $registro->s_registro_d_deleted_at = null;
 

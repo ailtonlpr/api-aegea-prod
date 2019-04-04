@@ -2,16 +2,12 @@
 
 namespace App;
 
-// use Illuminate\Database\Eloquent\Model;
-// use Illuminate\Database\Eloquent\SoftDeletes;
-
 use Yajra\Oci8\Eloquent\OracleEloquent as Model;
 
 class Carro extends Model
 {    
     public $timestamps = false;
 
-    // use SoftDeletes;
     protected $table = "S_CARROS"; // Definição da tabela
 
     // Quem estou terminando gravar em massa
@@ -22,13 +18,6 @@ class Carro extends Model
 
     // Definindo a chave primaria da tabela
     protected $primaryKey = 'S_CARRO_I_ID';
-
-    // São campos de data do sistema
-    // public $dates = [
-    //     'S_CARRO_D_CREATED_AT',
-    //     'S_CARRO_D_UPDATED_AT',
-    //     'S_CARRO_D_DELETED_AT'
-    // ];
 
     /*
     public static function boot()
