@@ -19,3 +19,4 @@ use Illuminate\Http\Request;
 
 
 Route::post('/v1/receberjson', 'DataProcessController@process');
+#Route::get('/v1/receberjson', 'DataProcessController@process');

@@ -15,71 +15,110 @@ use DB;
 
 class DataProcessController extends Controller
 {
-    //
+    public function __construct(Request $request) 
+    {
+        // echo '<pre>';
+        // // print_r($request);
+        // die('primeiro');
+    }
+
     public function process(Request $request)
     {
-        foreach ($request->positions as $data){
+        if (isset($request->positions))
+        {
 
-            $carro = DB::connection('oracle')
-                ->table('s_carros')
-                ->select('s_carro_i_id','s_carro_s_placa','s_carro_i_numero_serial','s_carro_i_id_interno','s_carro_d_created_at','s_carro_d_updated_at','s_carro_d_deleted_at')
-                ->where('s_carro_s_placa', $data['placa'])
-                ->first();
-            
-            try{
-                \DB::beginTransaction();
-                if(!$carro) {
-                    
-                    $agora = date('d-M-y');
-                    $prox_id = DB::connection('oracle')->table('s_carros')->select('s_carro_i_id')->max('s_carro_i_id');
-                    $prox_id = $prox_id + 1;
+            foreach ($request->positions as $data){
 
-                    $carro = new Carro();
-                    $carro->s_carro_i_id = $prox_id;
-                    $carro->s_carro_s_placa = $data['placa'];
-                    $carro->s_carro_i_numero_serial = $data['serialNumber'];
-                    $carro->s_carro_i_id_interno = $data['id'];
-                    $carro->s_carro_d_created_at = $agora;
-                    // $carro->s_carro_d_created_at = "TO_DATE('$agora', 'yyyy/mm/dd hh24:mi:ss')";
-                    // $carro->s_carro_d_updated_at = "TO_DATE('$agora', 'yyyy/mm/dd hh24:mi:ss')";
-                    // $carro->s_carro_d_deleted_at = "TO_DATE('$agora', 'yyyy/mm/dd hh24:mi:ss')";
+                $carro = DB::connection('oracle')
+                    ->table('s_carros')
+                    ->select('s_carro_i_id','s_carro_s_placa','s_carro_i_numero_serial','s_carro_i_id_interno','s_carro_d_created_at','s_carro_d_updated_at','s_carro_d_deleted_at')
+                    ->where('s_carro_s_placa', $data['placa'])
+                    ->first();
+                
+                try{
+                    \DB::beginTransaction();
+                    if(!$carro) {
+                        
+                        $agora = date('d-M-y');
+                        $prox_id = DB::connection('oracle')->table('s_carros')->select('s_carro_i_id')->max('s_carro_i_id');
+                        $prox_id = $prox_id + 1;
 
-                    if(!$carro->save()){
-                        throw new \Exception('Erro ao gravar os dados na tabela Carros.');
+                        $carro = new Carro();
+                        $carro->s_carro_i_id = $prox_id;
+                        $carro->s_carro_s_placa = $data['placa'];
+                        $carro->s_carro_i_numero_serial = $data['serialNumber'];
+                        $carro->s_carro_i_id_interno = $data['id'];
+                        $carro->s_carro_d_created_at = $agora;
+                        // $carro->s_carro_d_created_at = "TO_DATE('$agora', 'yyyy/mm/dd hh24:mi:ss')";
+                        // $carro->s_carro_d_updated_at = "TO_DATE('$agora', 'yyyy/mm/dd hh24:mi:ss')";
+                        // $carro->s_carro_d_deleted_at = "TO_DATE('$agora', 'yyyy/mm/dd hh24:mi:ss')";
+
+                        if(!$carro->save()){
+                            throw new \Exception('Erro ao gravar os dados na tabela Carros.');
+                        }
+                        
                     }
-                    
+
+                    $this->gravarEvento($carro->s_carro_i_id, $data);
+                    $this->gravarInfocan($carro->s_carro_i_id, $data['can']);
+                    $this->gravarInformacao($carro->s_carro_i_id, $data['info']);
+                    $this->gravarMacro($carro->s_carro_i_id, $data);
+                    $this->gravarRegistro($carro->s_carro_i_id, $data);
+                    $this->gerarArquivo($data);
+
+                }catch (\Exception $e){
+                    \DB::rollback();
+                    return response()->json(
+                        [
+                            'code' => 500 ,
+                            'msg' => "Erro na gravação dos dados.",
+                            'erroMsg' => $e->getMessage(),
+                            'erroCode' => $e->getCode(),
+                        ]
+                    );
+                }finally{
+                    \DB::commit();
                 }
+                
+            }//foreach
 
-                $this->gravarEvento($carro->s_carro_i_id, $data);
-                $this->gravarInfocan($carro->s_carro_i_id, $data['can']);
-                $this->gravarInformacao($carro->s_carro_i_id, $data['info']);
-                $this->gravarMacro($carro->s_carro_i_id, $data);
-                $this->gravarRegistro($carro->s_carro_i_id, $data);
-                $this->gerarArquivo($data);
-
-            }catch (\Exception $e){
-                \DB::rollback();
-                return response()->json(
-                    [
-                        'code' => 500 ,
-                        'msg' => "Erro na gravação dos dados.",
-                        'erroMsg' => $e->getMessage(),
-                        'erroCode' => $e->getCode(),
-                    ]
-                );
-            }finally{
-                \DB::commit();
-            }
-            
-        }//foreach
-
-        return response()->json(
-            [
-                'code' => 200,
-                'msg' => "Gravada com sucesso!"
-            ]
-        );
+            return response()->json(
+                [
+                    'code' => 200,
+                    'msg' => "Gravada com sucesso!"
+                ]
+            );
+        } 
+        else 
+        {
+            $this->gerarLog();
+            return response()->json(
+                [
+                    'code' => 200,
+                    'msg' => "sem dados"
+                ]
+            );
+        }
     }//process
+
+    private function gerarLog()
+    {
+        try
+        {
+            $nome_file = 'log'.'-'.date('Y_m_d_H_i_s').'.txt';
+            $data = [
+                    'code' => 200,
+                    'msg' => "sem dados"
+                ];
+            Storage::disk('api_public')->append($nome_file, json_encode($data));
+            Storage::disk('api_public')->move($nome_file, '/api_storage/logsis/'.$nome_file."");
+        }
+        catch (\Exception $e)
+        {
+            throw new \Exception('Erro ao criar arquivo {$nome_file}');
+        }
+    }
+
 
     private function gerarArquivo($data)
     {
