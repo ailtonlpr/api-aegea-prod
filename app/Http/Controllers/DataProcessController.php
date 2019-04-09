@@ -22,8 +22,22 @@ class DataProcessController extends Controller
         // die('primeiro');
     }
 
+    public function aviso()
+    {
+        return response()->json(
+            [
+                'code' => 200,
+                'msg' => "Use o metodo post"
+            ]
+        );
+    }
+
     public function process(Request $request)
     {
+        // echo '<pre>';
+        // print_r($request->positions);
+        // die('aki');
+        // return $request;
         if (isset($request->positions))
         {
 
@@ -57,6 +71,8 @@ class DataProcessController extends Controller
                             throw new \Exception('Erro ao gravar os dados na tabela Carros.');
                         }
                         
+                        // echo $carro->s_carro_i_id;
+                        // die('kkk');
                     }
 
                     $this->gravarEvento($carro->s_carro_i_id, $data);
