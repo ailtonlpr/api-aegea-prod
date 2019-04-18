@@ -2,18 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use App\Carro;
-use App\Evento;
-use App\Infocan;
-use App\Informacao;
-use App\Macro;
-use App\Registro;
+use App\TCarro;
+use App\TEvento;
+use App\TInfocan;
+use App\TInformacao;
+use App\TMacro;
+use App\TRegistro;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 use DB;
 
-class DataProcessController extends Controller
+class TestandoProcessController extends Controller
 {
     public function __construct(Request $request) 
     {
@@ -44,7 +44,7 @@ class DataProcessController extends Controller
             foreach ($request->positions as $data){
 
                 $carro = DB::connection('oracle')
-                    ->table('s_carros')
+                    ->table('t_s_carros')
                     ->select('s_carro_i_id','s_carro_s_placa','s_carro_i_numero_serial','s_carro_i_id_interno','s_carro_d_created_at','s_carro_d_updated_at','s_carro_d_deleted_at')
                     ->where('s_carro_s_placa', $data['placa'])
                     ->first();
@@ -56,10 +56,10 @@ class DataProcessController extends Controller
                         $agora = date('d-m-Y');
                         DB::setDateFormat('DD-MM-YYYY');                       
 
-                        $prox_id = DB::connection('oracle')->table('s_carros')->select('s_carro_i_id')->max('s_carro_i_id');
+                        $prox_id = DB::connection('oracle')->table('t_s_carros')->select('s_carro_i_id')->max('s_carro_i_id');
                         $prox_id = $prox_id + 1;
 
-                        $carro = new Carro();
+                        $carro = new TCarro();
                         $carro->s_carro_i_id = $prox_id;
                         $carro->s_carro_s_placa = $data['placa'];
                         $carro->s_carro_i_numero_serial = $data['serialNumber'];
@@ -123,7 +123,7 @@ class DataProcessController extends Controller
                     'msg' => "sem dados"
                 ];
             Storage::disk('api_public')->append($nome_file, json_encode($data));
-            Storage::disk('api_public')->move($nome_file, '/api_storage/logsis/'.$nome_file."");
+            Storage::disk('api_public')->move($nome_file, '/api_storage_teste/logsis/'.$nome_file."");
         }
         catch (\Exception $e)
         {
@@ -138,7 +138,7 @@ class DataProcessController extends Controller
         {
             $nome_file = $data['placa'].'-'.$data['id'].'-'.date('Y_m_d_H_i_s').'.json';
             Storage::disk('api_public')->append($nome_file, json_encode($data));
-            Storage::disk('api_public')->move($nome_file, '/api_storage/log/'.$nome_file."");
+            Storage::disk('api_public')->move($nome_file, '/api_storage_teste/log/'.$nome_file."");
         }
         catch (\Exception $e)
         {
@@ -152,10 +152,10 @@ class DataProcessController extends Controller
             $agora = date('d-m-Y');
             DB::setDateFormat('DD-MM-YYYY');
             
-            $prox_id = DB::connection('oracle')->table('s_eventos')->select('s_evento_i_id')->max('s_evento_i_id');
+            $prox_id = DB::connection('oracle')->table('t_s_eventos')->select('s_evento_i_id')->max('s_evento_i_id');
             $prox_id = $prox_id + 1;
 
-            $evento = new Evento();
+            $evento = new TEvento();
             $evento->s_evento_i_id = $prox_id;
             $evento->s_carros_s_carro_i_id = $carro_id;
             $evento->s_carros_s_carro_i_id_interno = $data['id'];
@@ -177,12 +177,12 @@ class DataProcessController extends Controller
         $agora = date('d-m-Y');
         DB::setDateFormat('DD-MM-YYYY');
         
-        $prox_id = DB::connection('oracle')->table('s_inforcans')->select('s_inforcan_i_id')->max('s_inforcan_i_id');
+        $prox_id = DB::connection('oracle')->table('t_s_inforcans')->select('s_inforcan_i_id')->max('s_inforcan_i_id');
         $prox_id = $prox_id + 1;
         
         $data_ = $data['can'];
 
-        $infocan = new Infocan();
+        $infocan = new TInfocan();
         $infocan->s_inforcan_i_id = $prox_id;
         $infocan->s_carros_s_carro_i_id = $carro_id;
         $infocan->s_carros_s_carro_i_id_interno = $data['id'];
@@ -206,12 +206,12 @@ class DataProcessController extends Controller
         $agora = date('d-m-Y');
         DB::setDateFormat('DD-MM-YYYY');
         
-        $prox_id = DB::connection('oracle')->table('s_informacoes')->select('s_informacoe_i_id')->max('s_informacoe_i_id');
+        $prox_id = DB::connection('oracle')->table('t_s_informacoes')->select('s_informacoe_i_id')->max('s_informacoe_i_id');
         $prox_id = $prox_id + 1;
         
         $data_ = $data['info'];
 
-        $informacao = new Informacao();
+        $informacao = new TInformacao();
         $informacao->s_informacoe_i_id = $prox_id;
         $informacao->s_carros_s_carro_i_id = $carro_id;
         $informacao->s_carros_s_carro_i_id_interno = $data['id'];
@@ -239,10 +239,10 @@ class DataProcessController extends Controller
             $agora = date('d-m-Y');
             DB::setDateFormat('DD-MM-YYYY');
             
-            $prox_id = DB::connection('oracle')->table('s_macros')->select('s_macro_i_id')->max('s_macro_i_id');
+            $prox_id = DB::connection('oracle')->table('t_s_macros')->select('s_macro_i_id')->max('s_macro_i_id');
             $prox_id = $prox_id + 1;
 
-            $macro = new Macro();
+            $macro = new TMacro();
             $macro->s_macro_i_id = $prox_id;
             $macro->s_carros_s_carro_i_id = $carro_id;
             $macro->s_carros_s_carro_i_id_interno = $data['id'];
@@ -264,17 +264,19 @@ class DataProcessController extends Controller
         $agora = date('d-m-Y');
         DB::setDateFormat('DD-MM-YYYY');
             
-        $prox_id = DB::connection('oracle')->table('s_registros')->select('s_registro_i_id')->max('s_registro_i_id');
+        $prox_id = DB::connection('oracle')->table('t_s_registros')->select('s_registro_i_id')->max('s_registro_i_id');
         $prox_id = $prox_id + 1;
 
-        $registro = new Registro();
+        $registro = new TRegistro();
         $registro->s_registro_i_id = $prox_id;
         $registro->s_carros_s_carro_i_id = $carro_id;
         $registro->s_carros_s_carro_i_id_interno = $data['id'];
         $registro->s_carros_s_carro_s_placa = $data['placa'];
         $registro->s_registro_i_cpf_motorista = $data['motorista'];
         $registro->s_registro_s_endereco = '"'.$data['end'].'"';
+        // $registro->s_registro_d_data_inc = Carbon::parse($data['dInc'])->format('Y-m-d H:m:s');
         $registro->s_registro_d_data_inc = Carbon::parse($data['dInc'])->format('d-m-Y');
+        // $registro->s_registro_d_data_pos = Carbon::parse($data['dPos'])->format('Y-m-d H:m:s');
         $registro->s_registro_d_data_pos = Carbon::parse($data['dPos'])->format('d-m-Y');
         $registro->s_registro_s_latitude = $data['coord'][0];
         $registro->s_registro_s_longitude = $data['coord'][1];

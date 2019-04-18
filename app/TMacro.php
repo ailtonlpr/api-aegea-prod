@@ -4,11 +4,11 @@ namespace App;
 
 use Yajra\Oci8\Eloquent\OracleEloquent as Model;
 
-class Macro extends Model
+class TMacro extends Model
 {
     public $timestamps = false;
 
-    protected  $table = "S_MACROS";
+    protected  $table = "T_S_MACROS";
 
     protected $fillable = ['S_MACRO_S_DESCRICAO','S_MACRO_T_APR_PROC'];
 

@@ -4,11 +4,11 @@ namespace App;
 
 use Yajra\Oci8\Eloquent\OracleEloquent as Model;
 
-class Informacao extends Model
+class TInformacao extends Model
 {
     public $timestamps = false;
 
-    protected  $table = "S_INFORMACOES";
+    protected  $table = "T_S_INFORMACOES";
 
     protected $fillable = ['S_INFORMACOE_F_ODO','S_INFORMACOE_I_ODO
     _TOTAL', 'S_INFORMACOE_I_RPM', 'S_INFORMACOE_I_VELOCIDADE', 'S_INFORMACOE_B_LOG', 'S_INFORMACOE_B_IGN', 'S_INFORMACOE_B_GPS'];

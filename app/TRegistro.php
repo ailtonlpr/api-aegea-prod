@@ -4,12 +4,12 @@ namespace App;
 
 use Yajra\Oci8\Eloquent\OracleEloquent as Model;
 
-class Registro extends Model
+class TRegistro extends Model
 {
     public $timestamps = false;
 
     // use SoftDeletes;
-    protected  $table = "S_REGISTROS";
+    protected  $table = "T_S_REGISTROS";
 
     protected $fillable = ['S_REGISTRO_S_MOTORISTA','S_REGISTRO_S_ENDERECO', 'S_REGISTRO_D_DATA_INC', 'S_REGISTRO_D_DATA_POS', 'S_REGISTRO_S_LATITUDE', 'S_REGISTRO_S_LONGITUDE'];
 
