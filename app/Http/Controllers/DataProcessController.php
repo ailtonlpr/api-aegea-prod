@@ -8,19 +8,54 @@ use App\Infocan;
 use App\Informacao;
 use App\Macro;
 use App\Registro;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
+
 use DB;
 
 class DataProcessController extends Controller
 {
+    
+    /*
     public function __construct(Request $request) 
     {
-        //echo '<pre>';
-        // print_r($request);
+        // echo '<pre>';
+        // print_r($request->positions);
         // die('primeiro');
     }
+    */
+
+    public function getIP()
+    {
+        if (!empty($_SERVER["HTTP_CLIENT_IP"]))
+         $ip = $_SERVER["HTTP_CLIENT_IP"];
+        elseif (!empty($_SERVER["HTTP_X_FORWARDED_FOR"]))
+         $ip = $_SERVER["HTTP_X_FORWARDED_FOR"];
+        else
+         $ip = $_SERVER["REMOTE_ADDR"];
+
+        return $ip;
+    }
+
+    public function getCargaLog($request)
+    {
+        $nome_arquivo = "log_de_carga_".date('Y-m-d').".log";
+
+        // Existem a pasta
+        if(!Storage::disk('api_public_log')->exists('/cargas')) {
+            Storage::disk('api_public_log')->makeDirectory('/cargas', 0775, true); //creates directory
+        }
+        // Gravar o arquivo
+        Storage::disk('api_public_log')->append('/cargas/'.$nome_arquivo, date('Y-m-d H:i:s'));
+        Storage::disk('api_public_log')->append('/cargas/'.$nome_arquivo, $this->getIP($_SERVER));
+        Storage::disk('api_public_log')->append('/cargas/'.$nome_arquivo, $_SERVER['REQUEST_METHOD']);
+        Storage::disk('api_public_log')->append('/cargas/'.$nome_arquivo, $request);
+        
+        Log::debug($request);
+    }
+    
 
     public function aviso()
     {
@@ -34,22 +69,26 @@ class DataProcessController extends Controller
 
     public function process(Request $request)
     {
+
         // echo '<pre>';
         // print_r($request->positions);
         // die('aki');
         // return $request;
+
+        $this->getCargaLog($request);
+
         if (isset($request->positions))
         {
             
             foreach ($request->positions as $data){
-
+                
                 $carro = DB::connection('oracle')
                     ->table('s_carros')
                     ->select('s_carro_i_id','s_carro_s_placa','s_carro_i_numero_serial','s_carro_i_id_interno','s_carro_d_created_at','s_carro_d_updated_at','s_carro_d_deleted_at')
                     ->where('s_carro_s_placa', $data['placa'])
                     ->first();
                 
-                try{
+                try {
                     \DB::beginTransaction();
                     if(!$carro) {
                         
@@ -65,12 +104,13 @@ class DataProcessController extends Controller
                         $carro->s_carro_i_numero_serial = $data['serialNumber'];
                         $carro->s_carro_i_id_interno = $data['id'];
                         $carro->s_carro_d_created_at = $agora;
-                        
+
                         if(!$carro->save()){
                             throw new \Exception('Erro ao gravar os dados na tabela Carros.');
                         }
                     }
                     
+
                     $this->gravarEvento($carro->s_carro_i_id, $data);
                     $this->gravarInfocan($carro->s_carro_i_id, $data);
                     $this->gravarInformacao($carro->s_carro_i_id, $data);
@@ -78,7 +118,7 @@ class DataProcessController extends Controller
                     $this->gravarRegistro($carro->s_carro_i_id, $data);
                     $this->gerarArquivo($data);
 
-                }catch (\Exception $e){
+                } catch (\Exception $e) {
                     \DB::rollback();
                     return response()->json(
                         [
@@ -88,7 +128,7 @@ class DataProcessController extends Controller
                             'erroCode' => $e->getCode(),
                         ]
                     );
-                }finally{
+                } finally {
                     \DB::commit();
                 }
                 
