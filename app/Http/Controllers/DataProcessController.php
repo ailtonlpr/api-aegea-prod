@@ -120,6 +120,9 @@ class DataProcessController extends Controller
 
                 } catch (\Exception $e) {
                     \DB::rollback();
+
+                    $this->gerarLogErro($data);
+                    
                     return response()->json(
                         [
                             'code' => 500 ,
@@ -164,6 +167,21 @@ class DataProcessController extends Controller
                 ];
             Storage::disk('api_public')->append($nome_file, json_encode($data));
             Storage::disk('api_public')->move($nome_file, '/api_storage/logsis/'.$nome_file."");
+        }
+        catch (\Exception $e)
+        {
+            throw new \Exception('Erro ao criar arquivo {$nome_file}');
+        }
+    }
+
+    private function gerarLogErro($data)
+    {
+        try
+        {
+            $nome_file = 'log'.'-'.date('Y_m_d_H_i_s').'.txt';
+            
+            Storage::disk('api_public')->append($nome_file, json_encode($data));
+            Storage::disk('api_public')->move($nome_file, '/api_storage/erro/'.$nome_file."");
         }
         catch (\Exception $e)
         {
