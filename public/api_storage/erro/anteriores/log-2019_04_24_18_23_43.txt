@@ -1,0 +1,2 @@
+
+{"id":8307236418,"placa":"PIT3679","serialNumber":4634329118,"coord":[-5.190202,-42.75862],"end":", Teresina - PI","dInc":"2019-04-24T19:23:57.93Z","dPos":"2019-04-24T19:24:14Z","motorista":null,"info":{"odo":31326.33,"odoTotal":38744.33,"rpm":0,"vel":9,"ign":true,"log":false,"gps":true},"eventos":[{"desc":"Posicionamento por tempo em movimento","src":true},{"desc":"Igni\u00e7\u00e3o ligada","src":false}],"macros":[],"can":{"comb":0,"cinto":false,"freio":false,"limp":false}}

@@ -8,6 +8,8 @@ use App\Infocan;
 use App\Informacao;
 use App\Macro;
 use App\Registro;
+use App\Logrequisicao;
+use App\Logitem;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -27,67 +29,12 @@ class DataProcessController extends Controller
     }
     */
 
-    public function getIP()
-    {
-        if (!empty($_SERVER["HTTP_CLIENT_IP"]))
-         $ip = $_SERVER["HTTP_CLIENT_IP"];
-        elseif (!empty($_SERVER["HTTP_X_FORWARDED_FOR"]))
-         $ip = $_SERVER["HTTP_X_FORWARDED_FOR"];
-        else
-         $ip = $_SERVER["REMOTE_ADDR"];
-
-        return $ip;
-    }
-
-    public function getCargaLog($request)
-    {
-        $nome_arquivo = "log_de_carga_".date('Y-m-d').".log";
-
-        // Existem a pasta
-        if(!Storage::disk('api_public_log')->exists('/cargas')) {
-            Storage::disk('api_public_log')->makeDirectory('/cargas', 0775, true); //creates directory
-        }
-        // Gravar o arquivo
-        Storage::disk('api_public_log')->append('/cargas/'.$nome_arquivo, date('Y-m-d H:i:s'));
-        Storage::disk('api_public_log')->append('/cargas/'.$nome_arquivo, $this->getIP($_SERVER));
-        Storage::disk('api_public_log')->append('/cargas/'.$nome_arquivo, $_SERVER['REQUEST_METHOD']);
-        Storage::disk('api_public_log')->append('/cargas/'.$nome_arquivo, $request);
-        
-        Log::debug($request);
-    }
-    
-
-    public function aviso()
-    {
-        return response()->json(
-            [
-                'code' => 200,
-                'msg' => "Use o metodo post"
-            ]
-        );
-    }
-
     public function process(Request $request)
     {
-
-        // echo '<pre>';
-        // print_r($request->positions);
-        // die('aki');
-        // return $request;
-
-        // select seq_s_carros.nextval from dual;
-       // die('aki');
-       // $prox_id = DB::connection('oracle')->selectOne("select seq_s_carros.nextval from dual");
-       // $prox_id = DB::connection('oracle')->selectOne("select seq_s_carros.nextval from dual");
-       // echo $prox_id->nextval;
-
-       die('aki');
-
         $this->getCargaLog($request);
 
         if (isset($request->positions))
         {
-            
             foreach ($request->positions as $data){
                 
                 $carro = DB::connection('oracle')
@@ -102,9 +49,6 @@ class DataProcessController extends Controller
                         
                         $agora = date('d-m-Y');
                         DB::setDateFormat('DD-MM-YYYY');                       
-
-                        // $prox_id = DB::connection('oracle')->table('s_carros')->select('s_carro_i_id')->max('s_carro_i_id');
-                        // $prox_id = $prox_id + 1;
 
                         $_prox_id = DB::connection('oracle')->selectOne("select seq_s_carros.nextval from dual");
                         $prox_id = $_prox_id->nextval;
@@ -121,7 +65,6 @@ class DataProcessController extends Controller
                         }
                     }
                     
-
                     $this->gravarEvento($carro->s_carro_i_id, $data);
                     $this->gravarInfocan($carro->s_carro_i_id, $data);
                     $this->gravarInformacao($carro->s_carro_i_id, $data);
@@ -167,6 +110,81 @@ class DataProcessController extends Controller
         }
     }//process
 
+    public function getIP()
+    {
+        if (!empty($_SERVER["HTTP_CLIENT_IP"]))
+         $ip = $_SERVER["HTTP_CLIENT_IP"];
+        elseif (!empty($_SERVER["HTTP_X_FORWARDED_FOR"]))
+         $ip = $_SERVER["HTTP_X_FORWARDED_FOR"];
+        else
+         $ip = $_SERVER["REMOTE_ADDR"];
+
+        return $ip;
+    }
+
+    private function getCargaLog($request)
+    {
+
+        $nome_arquivo = "log_de_carga_".date('Y-m-d').".log";
+
+        // Existem a pasta
+        if(!Storage::disk('api_public_log')->exists('/cargas')) {
+            Storage::disk('api_public_log')->makeDirectory('/cargas', 0775, true); //creates directory
+        }
+        // Gravar o arquivo
+        Storage::disk('api_public_log')->append('/cargas/'.$nome_arquivo, date('Y-m-d H:i:s'));
+        Storage::disk('api_public_log')->append('/cargas/'.$nome_arquivo, $this->getIP($_SERVER));
+        Storage::disk('api_public_log')->append('/cargas/'.$nome_arquivo, $_SERVER['REQUEST_METHOD']);
+        Storage::disk('api_public_log')->append('/cargas/'.$nome_arquivo, $request);
+
+        Log::debug($request);
+
+        $_prox_id = DB::connection('oracle')->selectOne("select seq_s_log_requisicao.nextval from dual");
+        $prox_id = $_prox_id->nextval;
+        DB::setDateFormat('DD-MM-YYYY');
+
+        $id = $prox_id;
+        $data_hora = date('d-m-Y');
+        $arrJson = [
+            'datahora'=> date('Y-m-d H:i:s'),
+            'dados' => $request
+        ];
+        $json = json_encode($arrJson);
+        $ip = $this->getIP();
+        $metodo = $_SERVER['REQUEST_METHOD'];
+
+        $logrequisicao = new Logrequisicao();
+        $logrequisicao->id_requisicao = $prox_id;
+        $logrequisicao->data = $data_hora;
+        $logrequisicao->json = $json;
+        $logrequisicao->ip = $ip;
+        $logrequisicao->metodo = $metodo;
+
+        if(!$logrequisicao->save()){
+            //throw new \Exception('Erro ao gravar os dados na tabela Logs requisão.');
+            $nome_file = 'log_requisicao_err'.'-'.date('Y_m_d_H_i_s').'.txt';
+            $_dados = [
+                    'code' => 500,
+                    'msg' => "err ao gravar log da base de dados",
+                    'json' => $json,
+                    'ip' => $ip,
+                    'metodo'=>$metodo
+                ];
+            Storage::disk('api_public')->append($nome_file, json_encode($_dados));
+            Storage::disk('api_public')->move($nome_file, '/api_storage/logsis/'.$nome_file."");
+        }
+    }
+    
+    private function aviso()
+    {
+        return response()->json(
+            [
+                'code' => 200,
+                'msg' => "Use o metodo post"
+            ]
+        );
+    }
+
     private function gerarLog()
     {
         try
@@ -189,22 +207,46 @@ class DataProcessController extends Controller
     {
         try
         {
+
             $nome_file = 'log_err'.'-'.date('Y_m_d_H_i_s').'.txt';
             $dados = [
                 'code'=> $getCode,
-                'mensage'=>$getMessage,
-                'dados'=>$data
+                'mensage'=> $getMessage,
+                'dados'=> $data
             ];
 
-            Storage::disk('api_public')->append($nome_file, json_encode($dados));
-            Storage::disk('api_public')->move($nome_file, '/api_storage/erro/'.$nome_file."");
+            // Existem a pasta
+            if(!Storage::disk('api_public_log')->exists('/cargas_err')) {
+                Storage::disk('api_public_log')->makeDirectory('/cargas_err', 0775, true); //creates directory
+            }
+            Storage::disk('api_public_log')->append('/cargas_err/'.$nome_file, json_encode($dados));
+
+
+            $_prox_id = DB::connection('oracle')->selectOne("select seq_s_log_item.nextval from dual");
+            $prox_id = $_prox_id->nextval;
+            DB::setDateFormat('DD-MM-YYYY');
+
+            $id = $prox_id;
+            $data_hora = date('d-m-Y');
+            $json = json_encode($dados);
+            $ip = $this->getIP();
+            $metodo = $_SERVER['REQUEST_METHOD'];
+
+            $logitem = new Logitem();
+            $logitem->id_item = $prox_id;
+            $logitem->data = $data_hora;
+            $logitem->json = $json;
+            $logitem->id_interno = $data['id'];
+
+            if(!$logitem->save()){
+                // Rotina para tratamento do erro
+            }
         }
         catch (\Exception $e)
         {
             throw new \Exception('Erro ao criar arquivo {$nome_file}');
         }
     }
-
 
     private function gerarArquivo($data)
     {
@@ -226,9 +268,6 @@ class DataProcessController extends Controller
             $agora = date('d-m-Y');
             DB::setDateFormat('DD-MM-YYYY');
             
-            // $prox_id = DB::connection('oracle')->table('s_eventos')->select('s_evento_i_id')->max('s_evento_i_id');
-            // $prox_id = $prox_id + 1;
-
             $_prox_id = DB::connection('oracle')->selectOne("select seq_s_eventos.nextval from dual");
             $prox_id = $_prox_id->nextval;
 
@@ -254,9 +293,6 @@ class DataProcessController extends Controller
         $agora = date('d-m-Y');
         DB::setDateFormat('DD-MM-YYYY');
         
-        // $prox_id = DB::connection('oracle')->table('s_inforcans')->select('s_inforcan_i_id')->max('s_inforcan_i_id');
-        // $prox_id = $prox_id + 1;
-
         $_prox_id = DB::connection('oracle')->selectOne("select seq_s_inforcans.nextval from dual");
         $prox_id = $_prox_id->nextval;
         
@@ -286,9 +322,6 @@ class DataProcessController extends Controller
         $agora = date('d-m-Y');
         DB::setDateFormat('DD-MM-YYYY');
         
-        // $prox_id = DB::connection('oracle')->table('s_informacoes')->select('s_informacoe_i_id')->max('s_informacoe_i_id');
-        // $prox_id = $prox_id + 1;
-
         $_prox_id = DB::connection('oracle')->selectOne("select seq_s_informacoes.nextval from dual");
         $prox_id = $_prox_id->nextval;
         
@@ -322,9 +355,6 @@ class DataProcessController extends Controller
             $agora = date('d-m-Y');
             DB::setDateFormat('DD-MM-YYYY');
             
-            // $prox_id = DB::connection('oracle')->table('s_macros')->select('s_macro_i_id')->max('s_macro_i_id');
-            // $prox_id = $prox_id + 1;
-
             $_prox_id = DB::connection('oracle')->selectOne("select seq_s_macros.nextval from dual");
             $prox_id = $_prox_id->nextval;
 
@@ -350,9 +380,6 @@ class DataProcessController extends Controller
         $agora = date('d-m-Y');
         DB::setDateFormat('DD-MM-YYYY');
             
-        // $prox_id = DB::connection('oracle')->table('s_registros')->select('s_registro_i_id')->max('s_registro_i_id');
-        //$prox_id = $prox_id + 1;
-
         $_prox_id = DB::connection('oracle')->selectOne("select seq_s_registros.nextval from dual");
         $prox_id = $_prox_id->nextval;
 

@@ -1,0 +1,1 @@
+{"code":500,"msg":"err ao gravar log da base de dados","json":"{\"datahora\":\"2019-04-25 11:42:23\",\"dados\":{\"attributes\":{},\"request\":{},\"query\":{},\"server\":{},\"files\":{},\"cookies\":{},\"headers\":{}}}","ip":"172.17.22.26","metodo":"POST"}
