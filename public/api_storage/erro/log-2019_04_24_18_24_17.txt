@@ -1,0 +1,2 @@
+
+{"id":8244492272,"placa":"QIO9269","serialNumber":4634142158,"coord":[-15.52721,-54.33226],"end":", Primavera do Leste - MT","dInc":"2019-04-10T10:45:14.573Z","dPos":"2019-04-10T06:52:33Z","motorista":null,"info":{"odo":29711.82,"odoTotal":33072.82,"rpm":0,"vel":0,"ign":false,"log":true,"gps":true},"eventos":[{"desc":"Modo Econ\u00f4mico","src":true},{"desc":"\u00c1rea de Controle (Unidade Primavera)","src":false},{"desc":"\u00c1rea de Controle (Regional 01)","src":false}],"macros":[],"can":{"comb":0,"cinto":false,"freio":false,"limp":false}}

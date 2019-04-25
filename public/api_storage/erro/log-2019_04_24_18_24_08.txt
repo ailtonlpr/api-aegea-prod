@@ -1,0 +1,2 @@
+
+{"id":8307912426,"placa":"PIT5379","serialNumber":4634321458,"coord":[-5.113188,-42.73874],"end":"Rua Coronel Olavo Nogueira , Teresina - PI","dInc":"2019-04-24T21:15:42.727Z","dPos":"2019-04-24T21:16:00Z","motorista":null,"info":{"odo":26312.28,"odoTotal":32298.28,"rpm":0,"vel":36,"ign":true,"log":false,"gps":true},"eventos":[{"desc":"Posicionamento por tempo em movimento","src":true},{"desc":"Igni\u00e7\u00e3o ligada","src":false}],"macros":[],"can":{"comb":0,"cinto":false,"freio":false,"limp":false}}

@@ -75,6 +75,14 @@ class DataProcessController extends Controller
         // die('aki');
         // return $request;
 
+        // select seq_s_carros.nextval from dual;
+       // die('aki');
+       // $prox_id = DB::connection('oracle')->selectOne("select seq_s_carros.nextval from dual");
+       // $prox_id = DB::connection('oracle')->selectOne("select seq_s_carros.nextval from dual");
+       // echo $prox_id->nextval;
+
+       die('aki');
+
         $this->getCargaLog($request);
 
         if (isset($request->positions))
@@ -95,8 +103,11 @@ class DataProcessController extends Controller
                         $agora = date('d-m-Y');
                         DB::setDateFormat('DD-MM-YYYY');                       
 
-                        $prox_id = DB::connection('oracle')->table('s_carros')->select('s_carro_i_id')->max('s_carro_i_id');
-                        $prox_id = $prox_id + 1;
+                        // $prox_id = DB::connection('oracle')->table('s_carros')->select('s_carro_i_id')->max('s_carro_i_id');
+                        // $prox_id = $prox_id + 1;
+
+                        $_prox_id = DB::connection('oracle')->selectOne("select seq_s_carros.nextval from dual");
+                        $prox_id = $_prox_id->nextval;
 
                         $carro = new Carro();
                         $carro->s_carro_i_id = $prox_id;
@@ -121,11 +132,11 @@ class DataProcessController extends Controller
                 } catch (\Exception $e) {
                     \DB::rollback();
 
-                    $this->gerarLogErro($data);
+                    $this->gerarLogErro($data, $e->getMessage(), $e->getCode());
                     
                     return response()->json(
                         [
-                            'code' => 500 ,
+                            'code' => 500,
                             'msg' => "Erro na gravação dos dados.",
                             'erroMsg' => $e->getMessage(),
                             'erroCode' => $e->getCode(),
@@ -174,13 +185,18 @@ class DataProcessController extends Controller
         }
     }
 
-    private function gerarLogErro($data)
+    private function gerarLogErro($data, $getMessage, $getCode )
     {
         try
         {
-            $nome_file = 'log'.'-'.date('Y_m_d_H_i_s').'.txt';
-            
-            Storage::disk('api_public')->append($nome_file, json_encode($data));
+            $nome_file = 'log_err'.'-'.date('Y_m_d_H_i_s').'.txt';
+            $dados = [
+                'code'=> $getCode,
+                'mensage'=>$getMessage,
+                'dados'=>$data
+            ];
+
+            Storage::disk('api_public')->append($nome_file, json_encode($dados));
             Storage::disk('api_public')->move($nome_file, '/api_storage/erro/'.$nome_file."");
         }
         catch (\Exception $e)
@@ -210,8 +226,11 @@ class DataProcessController extends Controller
             $agora = date('d-m-Y');
             DB::setDateFormat('DD-MM-YYYY');
             
-            $prox_id = DB::connection('oracle')->table('s_eventos')->select('s_evento_i_id')->max('s_evento_i_id');
-            $prox_id = $prox_id + 1;
+            // $prox_id = DB::connection('oracle')->table('s_eventos')->select('s_evento_i_id')->max('s_evento_i_id');
+            // $prox_id = $prox_id + 1;
+
+            $_prox_id = DB::connection('oracle')->selectOne("select seq_s_eventos.nextval from dual");
+            $prox_id = $_prox_id->nextval;
 
             $evento = new Evento();
             $evento->s_evento_i_id = $prox_id;
@@ -235,8 +254,11 @@ class DataProcessController extends Controller
         $agora = date('d-m-Y');
         DB::setDateFormat('DD-MM-YYYY');
         
-        $prox_id = DB::connection('oracle')->table('s_inforcans')->select('s_inforcan_i_id')->max('s_inforcan_i_id');
-        $prox_id = $prox_id + 1;
+        // $prox_id = DB::connection('oracle')->table('s_inforcans')->select('s_inforcan_i_id')->max('s_inforcan_i_id');
+        // $prox_id = $prox_id + 1;
+
+        $_prox_id = DB::connection('oracle')->selectOne("select seq_s_inforcans.nextval from dual");
+        $prox_id = $_prox_id->nextval;
         
         $data_ = $data['can'];
 
@@ -264,8 +286,11 @@ class DataProcessController extends Controller
         $agora = date('d-m-Y');
         DB::setDateFormat('DD-MM-YYYY');
         
-        $prox_id = DB::connection('oracle')->table('s_informacoes')->select('s_informacoe_i_id')->max('s_informacoe_i_id');
-        $prox_id = $prox_id + 1;
+        // $prox_id = DB::connection('oracle')->table('s_informacoes')->select('s_informacoe_i_id')->max('s_informacoe_i_id');
+        // $prox_id = $prox_id + 1;
+
+        $_prox_id = DB::connection('oracle')->selectOne("select seq_s_informacoes.nextval from dual");
+        $prox_id = $_prox_id->nextval;
         
         $data_ = $data['info'];
 
@@ -297,8 +322,11 @@ class DataProcessController extends Controller
             $agora = date('d-m-Y');
             DB::setDateFormat('DD-MM-YYYY');
             
-            $prox_id = DB::connection('oracle')->table('s_macros')->select('s_macro_i_id')->max('s_macro_i_id');
-            $prox_id = $prox_id + 1;
+            // $prox_id = DB::connection('oracle')->table('s_macros')->select('s_macro_i_id')->max('s_macro_i_id');
+            // $prox_id = $prox_id + 1;
+
+            $_prox_id = DB::connection('oracle')->selectOne("select seq_s_macros.nextval from dual");
+            $prox_id = $_prox_id->nextval;
 
             $macro = new Macro();
             $macro->s_macro_i_id = $prox_id;
@@ -322,8 +350,11 @@ class DataProcessController extends Controller
         $agora = date('d-m-Y');
         DB::setDateFormat('DD-MM-YYYY');
             
-        $prox_id = DB::connection('oracle')->table('s_registros')->select('s_registro_i_id')->max('s_registro_i_id');
-        $prox_id = $prox_id + 1;
+        // $prox_id = DB::connection('oracle')->table('s_registros')->select('s_registro_i_id')->max('s_registro_i_id');
+        //$prox_id = $prox_id + 1;
+
+        $_prox_id = DB::connection('oracle')->selectOne("select seq_s_registros.nextval from dual");
+        $prox_id = $_prox_id->nextval;
 
         $registro = new Registro();
         $registro->s_registro_i_id = $prox_id;
