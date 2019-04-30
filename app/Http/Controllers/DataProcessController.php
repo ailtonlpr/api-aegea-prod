@@ -36,6 +36,8 @@ class DataProcessController extends Controller
         if (isset($request->positions))
         {
             foreach ($request->positions as $data){
+
+                $data['placa'] = trim($data['placa']);
                 
                 $carro = DB::connection('oracle')
                     ->table('s_carros')
@@ -47,8 +49,8 @@ class DataProcessController extends Controller
                     \DB::beginTransaction();
                     if(!$carro) {
                         
-                        $agora = date('d-m-Y');
-                        DB::setDateFormat('DD-MM-YYYY');                       
+                        $agora = date('d-m-Y H:i:s');
+                        DB::setDateFormat('DD-MM-YYYY HH24:MI:SS');                       
 
                         $_prox_id = DB::connection('oracle')->selectOne("select seq_s_carros.nextval from dual");
                         $prox_id = $_prox_id->nextval;
@@ -124,7 +126,6 @@ class DataProcessController extends Controller
 
     private function getCargaLog($request)
     {
-
         $nome_arquivo = "log_de_carga_".date('Y-m-d').".log";
 
         // Existem a pasta
@@ -132,24 +133,29 @@ class DataProcessController extends Controller
             Storage::disk('api_public_log')->makeDirectory('/cargas', 0775, true); //creates directory
         }
         // Gravar o arquivo
+        Storage::disk('api_public_log')->append('/cargas/'.$nome_arquivo, '-----------------------');
         Storage::disk('api_public_log')->append('/cargas/'.$nome_arquivo, date('Y-m-d H:i:s'));
         Storage::disk('api_public_log')->append('/cargas/'.$nome_arquivo, $this->getIP($_SERVER));
         Storage::disk('api_public_log')->append('/cargas/'.$nome_arquivo, $_SERVER['REQUEST_METHOD']);
         Storage::disk('api_public_log')->append('/cargas/'.$nome_arquivo, $request);
+        Storage::disk('api_public_log')->append('/cargas/'.$nome_arquivo, '                       ');
 
         Log::debug($request);
 
         $_prox_id = DB::connection('oracle')->selectOne("select seq_s_log_requisicao.nextval from dual");
         $prox_id = $_prox_id->nextval;
-        DB::setDateFormat('DD-MM-YYYY');
+        // DB::setDateFormat('DD-MM-YYYY');
+        DB::setDateFormat('DD-MM-YYYY HH24:MI:SS'); 
 
         $id = $prox_id;
-        $data_hora = date('d-m-Y');
+        $data_hora = date('d-m-Y H:i:s');
+        $__dados = isset($request->positions[0]) ? $request->positions[0] : $request;
         $arrJson = [
             'datahora'=> date('Y-m-d H:i:s'),
-            'dados' => $request
+            'dados' => $__dados
         ];
         $json = json_encode($arrJson);
+        //$json = $request;
         $ip = $this->getIP();
         $metodo = $_SERVER['REQUEST_METHOD'];
 
@@ -224,10 +230,11 @@ class DataProcessController extends Controller
 
             $_prox_id = DB::connection('oracle')->selectOne("select seq_s_log_item.nextval from dual");
             $prox_id = $_prox_id->nextval;
-            DB::setDateFormat('DD-MM-YYYY');
+            // DB::setDateFormat('DD-MM-YYYY');
+            DB::setDateFormat('DD-MM-YYYY HH24:MI:SS');
 
             $id = $prox_id;
-            $data_hora = date('d-m-Y');
+            $data_hora = date('d-m-Y H:i:s');
             $json = json_encode($dados);
             $ip = $this->getIP();
             $metodo = $_SERVER['REQUEST_METHOD'];
@@ -377,8 +384,9 @@ class DataProcessController extends Controller
 
     private function gravarRegistro($carro_id, $data)
     {
-        $agora = date('d-m-Y');
-        DB::setDateFormat('DD-MM-YYYY');
+        $agora = date('d-m-Y H:i:s');
+        #DB::setDateFormat('DD-MM-YYYY');
+        DB::setDateFormat('DD-MM-YYYY HH24:MI:SS');
             
         $_prox_id = DB::connection('oracle')->selectOne("select seq_s_registros.nextval from dual");
         $prox_id = $_prox_id->nextval;
@@ -388,16 +396,15 @@ class DataProcessController extends Controller
         $registro->s_carros_s_carro_i_id = $carro_id;
         $registro->s_carros_s_carro_i_id_interno = $data['id'];
         $registro->s_carros_s_carro_s_placa = $data['placa'];
-        $registro->s_registro_i_cpf_motorista = $data['motorista'];
+        $registro->s_registro_i_cpf_motorista = str_replace('.','', $data['motorista']);
         $registro->s_registro_s_endereco = '"'.$data['end'].'"';
-        $registro->s_registro_d_data_inc = Carbon::parse($data['dInc'])->format('d-m-Y');
-        $registro->s_registro_d_data_pos = Carbon::parse($data['dPos'])->format('d-m-Y');
+        $registro->s_registro_d_data_inc = Carbon::parse($data['dInc'])->format('d-m-Y H:i:s');
+        $registro->s_registro_d_data_pos = Carbon::parse($data['dPos'])->format('d-m-Y H:i:s');
         $registro->s_registro_s_latitude = $data['coord'][0];
         $registro->s_registro_s_longitude = $data['coord'][1];
         $registro->s_registro_d_created_at = $agora;
         // $registro->s_registro_d_updated_at = null;
         // $registro->s_registro_d_deleted_at = null;
-
 
         if(!$registro->save()){
             throw new \Exception('Erro ao gravar os dados na tabela Registros. ID carro -> {$carro_id}');
